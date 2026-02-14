@@ -1,0 +1,1135 @@
+/* Современные переменные с фиолетовой палитрой */
+:root {
+    --primary: #8B5CF6;
+    --primary-dark: #7C3AED;
+    --primary-light: #A78BFA;
+    --secondary: #C4B5FD;
+    --accent: #DDD6FE;
+    --gradient-primary: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    --gradient-secondary: linear-gradient(135deg, #C4B5FD 0%, #8B5CF6 100%);
+    --gradient-dark: linear-gradient(135deg, #1F1B2D 0%, #2D2640 100%);
+    --gradient-card: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+    
+    --text-primary: #F8FAFC;
+    --text-secondary: #E2E8F0;
+    --text-muted: #94A3B8;
+    
+    --bg-primary: #0F0F1B;
+    --bg-secondary: #1A1625;
+    --bg-card: rgba(30, 27, 45, 0.7);
+    
+    --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 8px 25px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 15px 40px rgba(0, 0, 0, 0.45);
+    --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.5);
+    
+    --border-radius: 16px;
+    --border-radius-lg: 20px;
+    --border-radius-xl: 28px;
+    
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Сброс и базовые стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--gradient-dark);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* Фон с анимированными градиентами */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 50% 80%, rgba(196, 181, 253, 0.1) 0%, transparent 50%);
+    z-index: -1;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Основной контейнер */
+.weather-app {
+    width: 100%;
+    max-width: 1400px;
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 20px;
+    z-index: 1;
+}
+
+/* Основная панель */
+.main-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Карточки */
+.card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--gradient-primary);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Заголовки */
+h1, h2, h3, h4 {
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+h1 {
+    font-size: 28px;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+}
+
+h2 {
+    font-size: 20px;
+    color: var(--text-primary);
+}
+
+.app-title {
+    margin-bottom: 20px;
+}
+
+.app-subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+/* Поиск */
+.search-container {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.search-input-container {
+    flex: 1;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-primary);
+    font-size: 15px;
+    transition: var(--transition);
+}
+
+.search-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 2px var(--primary-light);
+    border-color: var(--primary-light);
+}
+
+.search-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Автодополнение */
+.autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(30, 27, 45, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius);
+    margin-top: 6px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+}
+
+.autocomplete-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.autocomplete-item:hover {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.autocomplete-item i {
+    color: var(--primary-light);
+    font-size: 14px;
+}
+
+.autocomplete-city {
+    font-weight: 600;
+}
+
+.autocomplete-region {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Кнопки */
+.btn {
+    padding: 14px 20px;
+    border-radius: var(--border-radius);
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--gradient-primary);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+}
+
+/* Переключатель единиц */
+.unit-toggle {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.unit-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.unit-btn.active {
+    background: var(--gradient-primary);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Статус */
+.status {
+    padding: 12px 16px;
+    border-radius: var(--border-radius);
+    margin-top: 16px;
+    font-size: 14px;
+    display: none;
+    border-left: 4px solid;
+    align-items: center;
+    gap: 8px;
+}
+
+.status.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    border-left-color: #ef4444;
+    display: flex;
+}
+
+.status.success {
+    background: rgba(74, 222, 128, 0.1);
+    color: #86efac;
+    border-left-color: #10b981;
+    display: flex;
+}
+
+.status.info {
+    background: rgba(59, 130, 246, 0.1);
+    color: #93c5fd;
+    border-left-color: #3b82f6;
+    display: flex;
+}
+
+/* Текущая погода */
+.current-weather {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 8px 0;
+}
+
+.weather-icon {
+    font-size: 70px;
+    color: var(--primary-light);
+    filter: drop-shadow(0 5px 15px rgba(139, 92, 246, 0.3));
+    min-width: 80px;
+    text-align: center;
+}
+
+.weather-info {
+    flex: 1;
+}
+
+.temperature {
+    font-size: 56px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: var(--gradient-secondary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -2px;
+    line-height: 1;
+}
+
+.weather-description {
+    font-size: 18px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.weather-meta {
+    display: flex;
+    gap: 20px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* Боковая панель */
+.side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Детали погоды */
+.weather-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.detail-card {
+    background: var(--gradient-card);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: var(--transition);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.detail-card:hover {
+    transform: translateY(-3px);
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.detail-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.detail-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Прогноз */
+.forecast-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    min-height: 200px;
+}
+
+.forecast-header {
+    margin-bottom: 16px;
+}
+
+.forecast-header h2 {
+    font-size: 20px;
+    margin-bottom: 0;
+}
+
+.forecast-container {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 10px 5px 20px;
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) rgba(255, 255, 255, 0.05);
+}
+
+.forecast-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.forecast-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.forecast-container::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 3px;
+}
+
+.forecast-day {
+    min-width: 120px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.forecast-day:hover {
+    background: rgba(139, 92, 246, 0.1);
+    transform: translateY(-3px);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.forecast-day.current {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: var(--primary);
+}
+
+.forecast-date {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.forecast-day-name {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.forecast-icon {
+    font-size: 28px;
+    color: var(--primary-light);
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.forecast-temp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.temp-high {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.temp-low {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.forecast-description {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 6px;
+    opacity: 0.8;
+}
+
+/* Футер */
+.api-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.api-info {
+    background: rgba(30, 27, 45, 0.85);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius);
+    padding: 10px 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.api-info:hover {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease forwards;
+}
+
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--primary-light);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============= АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ ============= */
+
+/* Телефоны (до 768px) - основной медиа-запрос */
+@media (max-width: 768px) {
+    /* Общие стили для мобильных */
+    html, body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    body {
+        padding: 0;
+        display: block;
+        align-items: stretch;
+        max-height: none;
+        overflow: visible;
+        background-attachment: fixed;
+    }
+    
+    /* Контейнер приложения */
+    .weather-app {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
+        grid-template-columns: 1fr;
+        overflow: visible;
+    }
+    
+    /* Карточки - компактнее */
+    .card {
+        padding: 16px;
+        border-radius: 14px;
+        margin-bottom: 0;
+        backdrop-filter: blur(15px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .card:hover {
+        transform: none;
+    }
+    
+    /* Заголовок приложения */
+    .app-title h1 {
+        font-size: 22px;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .app-title h1 i {
+        font-size: 20px;
+    }
+    
+    .app-subtitle {
+        font-size: 12px;
+        margin-bottom: 16px;
+        line-height: 1.4;
+    }
+    
+    /* Поисковая строка - вертикальный стек */
+    .search-container {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    
+    .search-input-container {
+        width: 100%;
+        min-width: 0;
+    }
+    
+    .search-input {
+        padding: 14px 16px;
+        font-size: 16px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        width: 100%;
+        -webkit-appearance: none;
+    }
+    
+    /* Кнопки - на всю ширину */
+    .btn {
+        width: 100%;
+        padding: 15px;
+        font-size: 15px;
+        border-radius: 12px;
+        justify-content: center;
+        margin: 0;
+        min-height: 48px;
+    }
+    
+    /* Переключатель единиц */
+    .unit-toggle {
+        margin-top: 12px;
+        justify-content: center;
+    }
+    
+    .unit-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+        border-radius: 20px;
+        min-height: 36px;
+    }
+    
+    /* Статус сообщения */
+    .status {
+        padding: 12px;
+        font-size: 13px;
+        margin-top: 12px;
+        border-radius: 10px;
+    }
+    
+    /* Текущая погода - вертикальная компоновка */
+    .current-weather {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+        padding: 8px 0 16px;
+    }
+    
+    .weather-icon {
+        font-size: 56px;
+        min-width: auto;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .weather-info {
+        width: 100%;
+    }
+    
+    .temperature {
+        font-size: 44px;
+        margin-bottom: 4px;
+        line-height: 1;
+        letter-spacing: -1.5px;
+    }
+    
+    .weather-description {
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: var(--text-secondary);
+    }
+    
+    .weather-meta {
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+        margin-top: 8px;
+    }
+    
+    .meta-item {
+        font-size: 13px;
+        color: var(--text-muted);
+        gap: 6px;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Прогноз на 7 дней */
+    .forecast-card {
+        padding: 16px;
+        overflow: visible;
+        min-height: auto;
+    }
+    
+    .forecast-header {
+        margin-bottom: 12px;
+    }
+    
+    .forecast-header h2 {
+        font-size: 18px;
+        margin-bottom: 0;
+    }
+    
+    .forecast-container {
+        gap: 8px;
+        padding: 8px 2px 16px 2px;
+        margin: 0 -4px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    
+    .forecast-container::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .forecast-day {
+        min-width: 100px;
+        padding: 12px 8px;
+        gap: 8px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        flex-shrink: 0;
+        min-height: 140px;
+    }
+    
+    .forecast-date {
+        font-size: 13px;
+        font-weight: 600;
+    }
+    
+    .forecast-day-name {
+        font-size: 12px;
+        opacity: 0.8;
+    }
+    
+    .forecast-icon {
+        font-size: 24px;
+        height: 35px;
+    }
+    
+    .temp-high {
+        font-size: 16px;
+        font-weight: 700;
+    }
+    
+    .temp-low {
+        font-size: 13px;
+        opacity: 0.7;
+    }
+    
+    .forecast-description {
+        font-size: 10px;
+        line-height: 1.2;
+        opacity: 0.8;
+    }
+    
+    /* Боковая панель - детали погоды */
+    .side-panel {
+        order: 3;
+        gap: 12px;
+    }
+    
+    .weather-details {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .detail-card {
+        padding: 14px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        min-height: 90px;
+    }
+    
+    .detail-label {
+        font-size: 12px;
+        gap: 5px;
+    }
+    
+    .detail-label i {
+        font-size: 13px;
+    }
+    
+    .detail-value {
+        font-size: 18px;
+        font-weight: 700;
+        margin-top: 4px;
+    }
+    
+    /* Футер с API */
+    .api-footer {
+        position: relative;
+        bottom: auto;
+        margin: 8px 0 4px;
+        padding: 0 12px;
+    }
+    
+    .api-info {
+        font-size: 11px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: rgba(30, 27, 45, 0.9);
+        width: 100%;
+        justify-content: center;
+        gap: 6px;
+    }
+    
+    .api-info span {
+        font-size: 11px;
+        text-align: center;
+        flex: 1;
+    }
+}
+
+/* Очень маленькие телефоны (до 480px) */
+@media (max-width: 480px) {
+    .weather-app {
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    .card {
+        padding: 14px;
+        border-radius: 12px;
+    }
+    
+    .app-title h1 {
+        font-size: 20px;
+    }
+    
+    .app-subtitle {
+        font-size: 11px;
+    }
+    
+    .temperature {
+        font-size: 40px;
+    }
+    
+    .weather-icon {
+        font-size: 50px;
+        height: 60px;
+    }
+    
+    .weather-description {
+        font-size: 15px;
+    }
+    
+    .forecast-day {
+        min-width: 90px;
+        padding: 10px 6px;
+        min-height: 130px;
+    }
+    
+    .forecast-icon {
+        font-size: 22px;
+    }
+    
+    .temp-high {
+        font-size: 15px;
+    }
+    
+    .temp-low {
+        font-size: 12px;
+    }
+    
+    .weather-details {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .detail-card {
+        padding: 12px;
+        min-height: 80px;
+    }
+    
+    .detail-value {
+        font-size: 17px;
+    }
+    
+    .btn {
+        padding: 14px;
+        font-size: 14px;
+        min-height: 46px;
+    }
+    
+    .search-input {
+        padding: 13px 15px;
+        font-size: 15px;
+    }
+}
+
+/* Супер маленькие телефоны (до 360px) */
+@media (max-width: 360px) {
+    .weather-app {
+        padding: 8px;
+        gap: 8px;
+    }
+    
+    .card {
+        padding: 12px;
+        border-radius: 10px;
+    }
+    
+    .app-title h1 {
+        font-size: 18px;
+        gap: 8px;
+    }
+    
+    .app-title h1 i {
+        font-size: 18px;
+    }
+    
+    .temperature {
+        font-size: 36px;
+    }
+    
+    .weather-icon {
+        font-size: 46px;
+        height: 55px;
+    }
+    
+    .forecast-day {
+        min-width: 85px;
+        padding: 10px 5px;
+        min-height: 125px;
+        gap: 6px;
+    }
+    
+    .forecast-date {
+        font-size: 12px;
+    }
+    
+    .forecast-day-name {
+        font-size: 11px;
+    }
+    
+    .forecast-icon {
+        font-size: 20px;
+        height: 30px;
+    }
+    
+    .forecast-description {
+        font-size: 9px;
+    }
+    
+    .detail-value {
+        font-size: 16px;
+    }
+    
+    .api-info {
+        font-size: 10px;
+        padding: 8px 12px;
+    }
+    
+    .api-info span {
+        font-size: 10px;
+    }
+}
+
+/* Пейзажная ориентация для телефонов */
+@media (max-width: 768px) and (orientation: landscape) and (max-height: 500px) {
+    .weather-app {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 10px;
+        padding: 8px;
+    }
+    
+    .main-panel {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+        gap: 10px;
+    }
+    
+    .side-panel {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        order: 0;
+    }
+    
+    .current-weather {
+        flex-direction: row;
+        text-align: left;
+        gap: 15px;
+        padding: 10px 0;
+    }
+    
+    .weather-info {
+        text-align: left;
+    }
+    
+    .weather-meta {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 12px;
+    }
+    
+    .meta-item {
+        justify-content: flex-start;
+        width: auto;
+    }
+    
+    .temperature {
+        font-size: 32px;
+    }
+    
+    .weather-icon {
+        font-size: 40px;
+    }
+    
+    .forecast-container {
+        max-height: 120px;
+    }
+    
+    .forecast-day {
+        min-width: 80px;
+        min-height: 110px;
+        padding: 8px 4px;
+    }
+    
+    .weather-details {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Безопасные зоны для современных телефонов */
+@supports (padding: max(0px)) {
+    @media (max-width: 768px) {
+        body {
+            padding-top: max(12px, env(safe-area-inset-top));
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            padding-left: max(12px, env(safe-area-inset-left));
+            padding-right: max(12px, env(safe-area-inset-right));
+        }
+        
+        .weather-app {
+            padding-top: max(8px, env(safe-area-inset-top));
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+            padding-left: max(8px, env(safe-area-inset-left));
+            padding-right: max(8px, env(safe-area-inset-right));
+        }
+        
+        .api-footer {
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+        }
+    }
+}
+
+/* Улучшение отзывчивости для тач-устройств */
+@media (max-width: 768px) and (pointer: coarse) {
+    .search-input,
+    .btn,
+    .unit-btn,
+    .forecast-day,
+    .autocomplete-item,
+    .detail-card {
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(139, 92, 246, 0.2);
+        tap-highlight-color: rgba(139, 92, 246, 0.2);
+    }
+    
+    input, select, textarea {
+        font-size: 16px; /* Предотвращает масштабирование в iOS */
+    }
+}

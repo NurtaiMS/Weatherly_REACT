@@ -30,34 +30,39 @@ function App() {
         
         // Получаем текущую погоду и прогноз
         const weatherResponse = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m,pressure_msl&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m,pressure_msl&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`
         )
         const weatherData = await weatherResponse.json()
         
+        // Проверяем наличие данных
+        if (!weatherData.current_weather) {
+          throw new Error('Нет данных о погоде')
+        }
+
         // Преобразуем данные для отображения
         setWeatherData({
           temperature: weatherData.current_weather.temperature,
           description: getWeatherDescription(weatherData.current_weather.weathercode),
           city: name,
           country: country,
-          feelsLike: weatherData.current_weather.temperature - 2, // Примерное значение
-          humidity: weatherData.hourly.relativehumidity_2m[0],
+          feelsLike: weatherData.current_weather.temperature - 2,
+          humidity: weatherData.hourly?.relativehumidity_2m[0] || 0,
           windSpeed: weatherData.current_weather.windspeed,
-          pressure: weatherData.hourly.pressure_msl[0],
+          pressure: weatherData.hourly?.pressure_msl[0] || 1013,
           weatherCode: weatherData.current_weather.weathercode
         })
         
         // Формируем прогноз на 7 дней
-        const dailyForecast = weatherData.daily.time.map((date, index) => ({
-          date: new Date(date),
-          maxTemp: weatherData.daily.temperature_2m_max[index],
-          minTemp: weatherData.daily.temperature_2m_min[index],
-          weatherCode: weatherData.daily.weathercode[index],
-          sunrise: weatherData.daily.sunrise[index],
-          sunset: weatherData.daily.sunset[index]
-        }))
+        if (weatherData.daily) {
+          const dailyForecast = weatherData.daily.time.map((date, index) => ({
+            date: new Date(date),
+            maxTemp: weatherData.daily.temperature_2m_max[index],
+            minTemp: weatherData.daily.temperature_2m_min[index],
+            weatherCode: weatherData.daily.weathercode[index]
+          }))
+          setForecast(dailyForecast)
+        }
         
-        setForecast(dailyForecast)
         setStatus({ type: 'success', message: `Данные для ${name} успешно загружены` })
         setCity(name)
       } else {
@@ -72,45 +77,130 @@ function App() {
     }
   }
 
-  // Функция для получения погоды по местоположению
+  // Функция для получения погоды по местоположению (ИСПРАВЛЕННАЯ)
   const getLocationWeather = () => {
-    if (navigator.geolocation) {
-      setLoading(true)
-      setStatus({ type: 'info', message: 'Получение вашего местоположения...' })
-      
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
+    if (!navigator.geolocation) {
+      setStatus({ 
+        type: 'error', 
+        message: 'Геолокация не поддерживается вашим браузером' 
+      })
+      return
+    }
+
+    setLoading(true)
+    setStatus({ 
+      type: 'info', 
+      message: 'Запрос местоположения...' 
+    })
+
+    navigator.geolocation.getCurrentPosition(
+      // Успех
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords
+          setStatus({ 
+            type: 'info', 
+            message: 'Получение данных о погоде...' 
+          })
+          
+          // Получаем погоду по координатам
+          const weatherResponse = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m,pressure_msl&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`
+          )
+          
+          if (!weatherResponse.ok) {
+            throw new Error('Ошибка получения данных')
+          }
+          
+          const weatherData = await weatherResponse.json()
+          
+          // Пробуем получить название города (если не получится - покажем координаты)
+          let cityName = `📍 ${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`
+          let countryName = ''
+          
           try {
-            const { latitude, longitude } = position.coords
-            
-            // Получаем название города по координатам (обратное геокодирование)
             const geoResponse = await fetch(
               `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=ru`
             )
             const geoData = await geoResponse.json()
             
-            if (geoData) {
-              const cityName = geoData.city || geoData.name || 'Ваше местоположение'
-              searchWeather(cityName)
-            } else {
-              setStatus({ type: 'error', message: 'Не удалось определить город' })
+            if (geoData.results && geoData.results.length > 0) {
+              cityName = geoData.results[0].name
+              countryName = geoData.results[0].country || ''
             }
-          } catch (error) {
-            console.error('Ошибка:', error)
-            setStatus({ type: 'error', message: 'Ошибка при получении данных' })
-          } finally {
-            setLoading(false)
+          } catch (geoError) {
+            console.log('Геокодирование не удалось, используем координаты')
           }
-        },
-        (error) => {
-          console.error('Ошибка геолокации:', error)
-          setStatus({ type: 'error', message: 'Не удалось получить ваше местоположение' })
+          
+          setWeatherData({
+            temperature: weatherData.current_weather.temperature,
+            description: getWeatherDescription(weatherData.current_weather.weathercode),
+            city: cityName,
+            country: countryName,
+            feelsLike: weatherData.current_weather.temperature - 2,
+            humidity: weatherData.hourly?.relativehumidity_2m[0] || 0,
+            windSpeed: weatherData.current_weather.windspeed,
+            pressure: weatherData.hourly?.pressure_msl[0] || 1013,
+            weatherCode: weatherData.current_weather.weathercode
+          })
+          
+          // Прогноз
+          if (weatherData.daily) {
+            const dailyForecast = weatherData.daily.time.map((date, index) => ({
+              date: new Date(date),
+              maxTemp: weatherData.daily.temperature_2m_max[index],
+              minTemp: weatherData.daily.temperature_2m_min[index],
+              weatherCode: weatherData.daily.weathercode[index]
+            }))
+            setForecast(dailyForecast)
+          }
+          
+          setStatus({ type: 'success', message: 'Данные получены!' })
+          
+          setTimeout(() => {
+            setStatus({ type: 'info', message: '' })
+          }, 3000)
+          
+        } catch (error) {
+          console.error('Ошибка:', error)
+          setStatus({ 
+            type: 'error', 
+            message: 'Ошибка при получении данных' 
+          })
+        } finally {
           setLoading(false)
         }
-      )
-    } else {
-      setStatus({ type: 'error', message: 'Геолокация не поддерживается вашим браузером' })
-    }
+      },
+      
+      // Ошибка геолокации
+      (error) => {
+        console.error('Ошибка геолокации:', error)
+        setLoading(false)
+        
+        let errorMessage = 'Не удалось получить местоположение'
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = '❌ Доступ запрещен. Разрешите геолокацию в браузере.'
+            break
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = '📍 Местоположение недоступно'
+            break
+          case error.TIMEOUT:
+            errorMessage = '⏱️ Время ожидания истекло'
+            break
+        }
+        
+        setStatus({ type: 'error', message: errorMessage })
+      },
+      
+      // Настройки
+      {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    )
   }
 
   // Функция для автодополнения городов
@@ -306,7 +396,7 @@ function App() {
                 <div className="weather-meta">
                   <div className="meta-item">
                     <i className="fa-solid fa-map-marker-alt"></i>
-                    <span>{weatherData ? `${weatherData.city}, ${weatherData.country}` : city}</span>
+                    <span>{weatherData ? `${weatherData.city}${weatherData.country ? ', ' + weatherData.country : ''}` : city}</span>
                   </div>
                   <div className="meta-item">
                     <i className="fa-solid fa-clock"></i>
@@ -322,7 +412,7 @@ function App() {
             <div className="forecast-header">
               <h2>Прогноз на 7 дней</h2>
             </div>
-            <div className="forecast-container" id="forecastContainer">
+            <div className="forecast-container">
               {forecast.length > 0 ? forecast.map((day, index) => (
                 <div key={index} className={`forecast-day ${index === 0 ? 'current' : ''}`}>
                   <div className="forecast-date">{formatDate(day.date)}</div>
